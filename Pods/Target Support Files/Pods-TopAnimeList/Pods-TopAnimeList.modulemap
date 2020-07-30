@@ -1,0 +1,6 @@
+framework module Pods_TopAnimeList {
+  umbrella header "Pods-TopAnimeList-umbrella.h"
+
+  export *
+  module * { export * }
+}
