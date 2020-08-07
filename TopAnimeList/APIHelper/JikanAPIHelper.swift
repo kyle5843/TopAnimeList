@@ -19,7 +19,7 @@ public struct APIError: Error {
     let code:APIErrorCode
 }
 
-class JikanAPIHelper: NSObject {
+class JikanAPIHelper {
     
     static let host = "https://api.jikan.moe/v3"
     static let top = "top"
@@ -40,15 +40,19 @@ class JikanAPIHelper: NSObject {
             switch response.result {
             case .success(let json):
                 if let json = json as? [String: Any] {
-                    if let data = json[top] as? Array<[String: Any]> {
-                        let list:Array<AnimeInfo> = data.compactMap { item -> AnimeInfo? in
-                            let info = AnimeInfo.convert(item)
-                            if Dictionary<AnimeInfoKeys, Any>.isValidity(dict: info, typeMap: AnimeInfo.typeMap()) {
-                                return AnimeInfo.init(info: info)
-                            }
-                            return nil
+                    if let top = json[top] as? Array<[String: Any]> {
+                        
+                        do {
+                            let data = try JSONSerialization.data(withJSONObject: top, options: [])
+                            let type = [DecodeFailable<AnimeInfo>].self
+                            let list = try JSONDecoder().decode(type, from: data).compactMap{ $0.base }
+                            completion(list, nil)
+                        } catch {
+                            completion(nil, APIError.init(msg: "Bad data format",
+                                                          code: .DataForamtError))
+                            NSLog("FetchTopAnime fail, Bad data format")
                         }
-                        completion(list, nil)
+                        
                         return
                     } else if let error = json["error"] as? String {
                         completion(nil, APIError.init(msg: error,

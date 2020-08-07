@@ -30,8 +30,11 @@ class AnimeInfoRepository: NSObject, DataRepository {
     typealias element = AnimeInfo
     
     static let shared = AnimeInfoRepository()
-    
     let fetchSubject = PublishSubject<Array<AnimeInfo>>()
+    
+    private override init() {
+        super.init()
+    }
     
     func fetchData(_ params: Parameters) {
         DispatchQueue.global().async {

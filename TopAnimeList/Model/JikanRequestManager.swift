@@ -16,7 +16,7 @@ class JikanRequestManager: NSObject {
     static let shared = JikanRequestManager()
     private var requests = Dictionary<Parameters, DataRequest>()
     
-    override init() {
+    private override init() {
         super.init()
         
         NotificationCenter.default.addObserver(self, selector:#selector(applicationDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)

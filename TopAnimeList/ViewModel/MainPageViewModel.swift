@@ -81,7 +81,8 @@ class MainPageViewModel: NSObject {
     }
     
     func loadMoreIfNeed(_ index:Int){
-        if self.topAnimeInfos.count - index <= 10 {
+        let count = self.topAnimeInfos.count
+        if count - index <= 10 && count >= 50 {
             self.fetchData()
         }
     }

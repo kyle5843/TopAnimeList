@@ -21,7 +21,16 @@ enum AnimeInfoKeys: String, CodingKey {
     case Score     = "score"
 }
 
-class AnimeInfo: NSObject, NSCopying {
+struct DecodeFailable<Base : Decodable> : Decodable {
+    let base: Base?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.base = try? container.decode(Base.self)
+    }
+}
+
+struct AnimeInfo : Equatable, Decodable {
     
     var malId: Int
     var title: String
@@ -34,10 +43,21 @@ class AnimeInfo: NSObject, NSCopying {
     var rank: Int
     var score: Int
     
-    var favorite:Bool = false
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: AnimeInfoKeys.self)
+        self.malId = try container.decode(Int.self, forKey: .MalId)
+        self.title = try container.decode(String.self, forKey: .Title)
+        self.startDate = try container.decodeIfPresent(String.self, forKey: .StartDate) ?? "N/A"
+        self.endDate = try container.decodeIfPresent(String.self, forKey: .EndDate) ?? "N/A"
+        self.type = try container.decodeIfPresent(String.self, forKey: .TypeKey) ?? "N/A"
+        self.url = try container.decodeIfPresent(String.self, forKey: .URL) ?? "N/A"
+        self.imageUrl = try container.decodeIfPresent(String.self, forKey: .ImageUrl) ?? "N/A"
+        self.members = try container.decodeIfPresent(Int.self, forKey: .Members) ?? 0
+        self.rank = try container.decodeIfPresent(Int.self, forKey: .Rank) ?? 0
+        self.score = try container.decodeIfPresent(Int.self, forKey: .Score) ?? 0
+    }
     
     init(info:[AnimeInfoKeys : Any]) {
-        
         self.malId = info[.MalId] as! Int
         self.title = info[.Title] as! String
         self.startDate = info[.StartDate] as? String ?? "N/A"
@@ -48,44 +68,10 @@ class AnimeInfo: NSObject, NSCopying {
         self.members = info[.Members] as? Int ?? 0
         self.rank = info[.Rank] as? Int ?? 0
         self.score = info[.Score] as? Int ?? 0
-        
-        super.init()
     }
     
-    func copy(with zone: NSZone? = nil) -> Any {
-        let info = AnimeInfo.init(info: [.MalId : self.malId,
-                                         .Title : self.title,
-                                         .StartDate : self.startDate,
-                                         .EndDate : self.endDate,
-                                         .TypeKey : self.type,
-                                         .URL : self.url,
-                                         .ImageUrl : self.imageUrl,
-                                         .Members : self.members,
-                                         .Rank  : self.rank,
-                                         .Score : self.score ])
-        info.favorite = self.favorite
-        return info
-    }
-    
-    override func isEqual(_ object: Any?) -> Bool {
-        guard let info = object as? AnimeInfo  else {
-            return false
-        }
-        return self.malId == info.malId
-    }
-    
-    //MARK: Static functions
-    
-    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    *  AnimeInfo type check
-    *
-    *  Skip the info without MalId & Title
-    *  Other fail/null value will replace by "N/A"
-    *
-    * ------------------------------------------------------------*/
-    static func typeMap() -> Dictionary<AnimeInfoKeys, Any>{
-        return [.MalId : Int.self,
-                .Title : String.self]
+    static func == (lhs: AnimeInfo, rhs: AnimeInfo) -> Bool {
+        return lhs.malId == rhs.malId
     }
     
     static func convert(_ dict:Dictionary<String, Any>) -> Dictionary<AnimeInfoKeys, Any> {

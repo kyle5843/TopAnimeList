@@ -58,6 +58,9 @@ class JikanTypeModel: NSObject {
     }()
     
     static let shared = JikanTypeModel()
+    private override init() {
+        super.init()
+    }
     
     func mainTypeList() -> Array<JikanType> {
         return [.Anime, .Manga]
